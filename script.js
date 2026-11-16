@@ -3,9 +3,24 @@ document.addEventListener("DOMContentLoaded", function () {
   const bgMusic = document.getElementById("bgMusic");
   const musicToggle = document.getElementById("musicToggle");
 
+  // Hint agar user tahu harus tap kalau autoplay diblokir
+  const musicHint = document.createElement("div");
+  musicHint.className = "music-hint";
+  musicHint.innerHTML = '<i class="fas fa-hand-pointer"></i> Sentuh layar untuk memutar lagu';
+  document.body.appendChild(musicHint);
+
+  function showMusicHint() {
+    musicHint.classList.add("show");
+  }
+
+  function hideMusicHint() {
+    musicHint.classList.remove("show");
+  }
+
   function setPlayingUI(isPlaying) {
     if (isPlaying) {
       musicToggle.classList.add("playing");
+      hideMusicHint();
     } else {
       musicToggle.classList.remove("playing");
     }
@@ -13,12 +28,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function tryPlayMusic() {
     if (bgMusic.paused) {
+      bgMusic.muted = false;
+      bgMusic.volume = MUSIC_BASE_VOLUME;
       bgMusic
         .play()
         .then(() => setPlayingUI(true))
         .catch(() => {
           // Autoplay diblokir browser, tunggu interaksi pertama
           setPlayingUI(false);
+          showMusicHint();
         });
     }
   }
@@ -28,6 +46,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (bgMusic && musicToggle) {
     bgMusic.volume = MUSIC_BASE_VOLUME;
+
+    // Deteksi jika file lagu gagal dimuat
+    bgMusic.addEventListener("error", function () {
+      musicHint.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Lagu gagal dimuat';
+      showMusicHint();
+    });
 
     // Sinkronkan UI jika musik berhenti sendiri
     bgMusic.addEventListener("play", () => setPlayingUI(true));
@@ -46,12 +70,14 @@ document.addEventListener("DOMContentLoaded", function () {
           .play()
           .then(() => {
             setPlayingUI(true);
+            showMusicHint();
 
             const unmuteOnFirstInteraction = function () {
               bgMusic.muted = false;
-              if (bgMusic.paused) {
-                bgMusic.play().catch(() => setPlayingUI(false));
-              }
+              bgMusic.volume = MUSIC_BASE_VOLUME;
+              // Panggil play() meski sudah berjalan (quirk iOS Safari)
+              bgMusic.play().catch(() => setPlayingUI(false));
+              hideMusicHint();
               document.removeEventListener("click", unmuteOnFirstInteraction);
               document.removeEventListener("keydown", unmuteOnFirstInteraction);
               document.removeEventListener("touchstart", unmuteOnFirstInteraction);
@@ -62,8 +88,10 @@ document.addEventListener("DOMContentLoaded", function () {
           })
           .catch(() => {
             // Fallback terakhir: mulai pada interaksi pertama
+            showMusicHint();
             const startOnFirstInteraction = function () {
               tryPlayMusic();
+              hideMusicHint();
               document.removeEventListener("click", startOnFirstInteraction);
               document.removeEventListener("keydown", startOnFirstInteraction);
               document.removeEventListener("touchstart", startOnFirstInteraction);
@@ -74,9 +102,11 @@ document.addEventListener("DOMContentLoaded", function () {
           });
       });
 
-    // Toggle manual
+    // Toggle manual - PENTING: selalu unmute saat tombol ditekan
     musicToggle.addEventListener("click", function (e) {
       e.stopPropagation();
+      bgMusic.muted = false; // hapus status muted dari trik autoplay
+      bgMusic.volume = MUSIC_BASE_VOLUME;
       if (bgMusic.paused) {
         bgMusic
           .play()
