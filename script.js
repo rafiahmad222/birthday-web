@@ -1,4 +1,62 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // ================= Background Music =================
+  const bgMusic = document.getElementById("bgMusic");
+  const musicToggle = document.getElementById("musicToggle");
+
+  function setPlayingUI(isPlaying) {
+    if (isPlaying) {
+      musicToggle.classList.add("playing");
+    } else {
+      musicToggle.classList.remove("playing");
+    }
+  }
+
+  function tryPlayMusic() {
+    if (bgMusic.paused) {
+      bgMusic
+        .play()
+        .then(() => setPlayingUI(true))
+        .catch(() => {
+          // Autoplay diblokir browser, tunggu interaksi pertama
+          setPlayingUI(false);
+        });
+    }
+  }
+
+  if (bgMusic && musicToggle) {
+    // Coba autoplay langsung
+    tryPlayMusic();
+
+    // Fallback: mulai musik pada interaksi pertama (klik/tekan apapun)
+    const startOnFirstInteraction = function () {
+      tryPlayMusic();
+      document.removeEventListener("click", startOnFirstInteraction);
+      document.removeEventListener("keydown", startOnFirstInteraction);
+      document.removeEventListener("touchstart", startOnFirstInteraction);
+    };
+    document.addEventListener("click", startOnFirstInteraction);
+    document.addEventListener("keydown", startOnFirstInteraction);
+    document.addEventListener("touchstart", startOnFirstInteraction);
+
+    // Sinkronkan UI jika musik berhenti sendiri
+    bgMusic.addEventListener("play", () => setPlayingUI(true));
+    bgMusic.addEventListener("pause", () => setPlayingUI(false));
+
+    // Toggle manual
+    musicToggle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (bgMusic.paused) {
+        bgMusic
+          .play()
+          .then(() => setPlayingUI(true))
+          .catch(() => setPlayingUI(false));
+      } else {
+        bgMusic.pause();
+        setPlayingUI(false);
+      }
+    });
+  }
+
   // Slideshow functionality
   let currentSlide = 0;
   const slides = document.querySelectorAll(".slide");
