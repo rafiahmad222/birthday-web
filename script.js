@@ -23,24 +23,56 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  if (bgMusic && musicToggle) {
-    // Coba autoplay langsung
-    tryPlayMusic();
+  // Volume dasar musik latar
+  const MUSIC_BASE_VOLUME = 0.7;
 
-    // Fallback: mulai musik pada interaksi pertama (klik/tekan apapun)
-    const startOnFirstInteraction = function () {
-      tryPlayMusic();
-      document.removeEventListener("click", startOnFirstInteraction);
-      document.removeEventListener("keydown", startOnFirstInteraction);
-      document.removeEventListener("touchstart", startOnFirstInteraction);
-    };
-    document.addEventListener("click", startOnFirstInteraction);
-    document.addEventListener("keydown", startOnFirstInteraction);
-    document.addEventListener("touchstart", startOnFirstInteraction);
+  if (bgMusic && musicToggle) {
+    bgMusic.volume = MUSIC_BASE_VOLUME;
 
     // Sinkronkan UI jika musik berhenti sendiri
     bgMusic.addEventListener("play", () => setPlayingUI(true));
     bgMusic.addEventListener("pause", () => setPlayingUI(false));
+
+    // Coba autoplay langsung saat web dibuka
+    bgMusic
+      .play()
+      .then(() => setPlayingUI(true))
+      .catch(() => {
+        // Autoplay bersuara diblokir browser.
+        // Trik: mulai dalam mode muted (diizinkan browser),
+        // lalu unmute otomatis pada interaksi pertama.
+        bgMusic.muted = true;
+        bgMusic
+          .play()
+          .then(() => {
+            setPlayingUI(true);
+
+            const unmuteOnFirstInteraction = function () {
+              bgMusic.muted = false;
+              if (bgMusic.paused) {
+                bgMusic.play().catch(() => setPlayingUI(false));
+              }
+              document.removeEventListener("click", unmuteOnFirstInteraction);
+              document.removeEventListener("keydown", unmuteOnFirstInteraction);
+              document.removeEventListener("touchstart", unmuteOnFirstInteraction);
+            };
+            document.addEventListener("click", unmuteOnFirstInteraction);
+            document.addEventListener("keydown", unmuteOnFirstInteraction);
+            document.addEventListener("touchstart", unmuteOnFirstInteraction);
+          })
+          .catch(() => {
+            // Fallback terakhir: mulai pada interaksi pertama
+            const startOnFirstInteraction = function () {
+              tryPlayMusic();
+              document.removeEventListener("click", startOnFirstInteraction);
+              document.removeEventListener("keydown", startOnFirstInteraction);
+              document.removeEventListener("touchstart", startOnFirstInteraction);
+            };
+            document.addEventListener("click", startOnFirstInteraction);
+            document.addEventListener("keydown", startOnFirstInteraction);
+            document.addEventListener("touchstart", startOnFirstInteraction);
+          });
+      });
 
     // Toggle manual
     musicToggle.addEventListener("click", function (e) {
@@ -74,27 +106,27 @@ document.addEventListener("DOMContentLoaded", function () {
   const memories = [
     {
       img: "images/wafiqduo1.jpg",
-      date: "Cheris PhotoBox Lippo Mall, Jember",
+      date: "AMU 2K26, Stadion Universitas Jember",
     },
     {
       img: "images/wafiqduo2.jpg",
-      date: "Pep's Self Photo Studio, Jember",
+      date: "Cafe Sorai, Jember",
     },
     {
       img: "images/wafiqduo3.jpg",
-      date: "Jl. Karimata No.77, Jember",
+      date: "Cafe Sorai, Jember",
     },
     {
       img: "images/wafiqduo4.jpg",
-      date: "Cheris PhotoBox Lippo Mall, Jember",
+      date: "Cafe Margin Space, Jember",
     },
     {
       img: "images/wafiqduo5.jpg",
-      date: "Pep's Self Photo Studio, Jember",
+      date: "Cafe Margin Space, Jember",
     },
     {
       img: "images/wafiqduo6.jpg",
-      date: "Solaria Malang Town Square,",
+      date: "Perunggu Date, Jember",
     },
   ];
 
@@ -666,9 +698,31 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // Helper: fade volume musik secara halus
+  function fadeMusicVolume(target, duration) {
+    if (!bgMusic) return;
+    duration = duration || 800;
+    const start = bgMusic.volume;
+    const startTime = performance.now();
+
+    function step(now) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      bgMusic.volume = start + (target - start) * progress;
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
   // Function untuk menampilkan modal video
   function openVideoModal() {
     videoModal.classList.add("active");
+
+    // Kecilkan musik latar agar suara video lebih didengar
+    if (!bgMusic.paused) {
+      fadeMusicVolume(0.08, 1000);
+    }
 
     // Set Google Drive video URL dengan ID file Anda
     if (birthdayVideo) {
@@ -693,6 +747,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // Function untuk menutup modal video
   function closeVideoModal() {
     videoModal.classList.remove("active");
+
+    // Kembalikan volume musik latar seperti semula
+    fadeMusicVolume(MUSIC_BASE_VOLUME, 1000);
 
     // Reset iframe src saat ditutup untuk menghentikan pemutaran
     if (birthdayVideo) {
