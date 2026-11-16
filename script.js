@@ -15,28 +15,56 @@ document.addEventListener("DOMContentLoaded", function () {
   // Memory Gallery data - Replace with your actual photos and stories
   const memories = [
     {
-      img: "images/memory1.jpg",
+      img: "images/wafiqduo1.jpg",
       date: "Cheris PhotoBox Lippo Mall, Jember",
     },
     {
-      img: "images/memory2.jpg",
+      img: "images/wafiqduo2.jpg",
       date: "Pep's Self Photo Studio, Jember",
     },
     {
-      img: "images/memory3.jpg",
+      img: "images/wafiqduo3.jpg",
       date: "Jl. Karimata No.77, Jember",
     },
     {
-      img: "images/memory4.jpg",
+      img: "images/wafiqduo4.jpg",
       date: "Cheris PhotoBox Lippo Mall, Jember",
     },
     {
-      img: "images/memory5.jpg",
+      img: "images/wafiqduo5.jpg",
       date: "Pep's Self Photo Studio, Jember",
     },
     {
-      img: "images/memory6.jpg",
+      img: "images/wafiqduo6.jpg",
       date: "Solaria Malang Town Square,",
+    },
+  ];
+
+  // Foto dia sendiri (solo) - Ganti dengan foto asli Rara
+  const herPhotos = [
+    {
+      img: "images/wafiqsolo1.jpg",
+      date: "The Queen of My Heart 👑",
+    },
+    {
+      img: "images/wafiqsolo2.jpg",
+      date: "Cantiknya Ibu Negara Rav 🥰",
+    },
+    {
+      img: "images/wafiqsolo3.jpg",
+      date: "Pretty Girl, Pretty Smile 💖",
+    },
+    {
+      img: "images/wafiqsolo4.jpg",
+      date: "My Favorite Person Ever 💕",
+    },
+    {
+      img: "images/wafiqsolo5.jpg",
+      date: "Sunshine in Human Form ☀️",
+    },
+    {
+      img: "images/wafiqsolo6.jpg",
+      date: "Sekali Seumur Hidup, Sayangnya 🌸",
     },
   ];
 
@@ -328,9 +356,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to create gallery
   function createGallery() {
-    const galleryContainer = document.querySelector(".gallery-container");
-    galleryContainer.innerHTML = ""; // Clear any existing content
+    const herContainer = document.getElementById("galleryHer");
+    const usContainer = document.getElementById("galleryUs");
 
+    herContainer.innerHTML = "";
+    usContainer.innerHTML = "";
+
+    // Isi section foto solo Rara
+    herPhotos.forEach((photo, index) => {
+      const galleryItem = document.createElement("div");
+      galleryItem.className = "gallery-item solo-item";
+      galleryItem.dataset.index = index;
+
+      galleryItem.innerHTML = `
+                <img src="${photo.img}" alt="Foto Rara ${
+        index + 1
+      }" class="gallery-img">
+                <div class="caption-overlay">
+                    <div class="memory-date">${photo.date}</div>
+                </div>
+            `;
+
+      galleryItem.addEventListener("click", () => openLightbox(index, "her"));
+      herContainer.appendChild(galleryItem);
+    });
+
+    // Isi section foto bersama
     memories.forEach((memory, index) => {
       const galleryItem = document.createElement("div");
       galleryItem.className = "gallery-item";
@@ -345,8 +396,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
             `;
 
-      galleryItem.addEventListener("click", () => openLightbox(index));
-      galleryContainer.appendChild(galleryItem);
+      galleryItem.addEventListener("click", () => openLightbox(index, "us"));
+      usContainer.appendChild(galleryItem);
+    });
+
+    // Logika tab switch
+    const tabs = document.querySelectorAll(".gallery-tab");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", function () {
+        tabs.forEach((t) => t.classList.remove("active"));
+        this.classList.add("active");
+
+        const isHer = this.dataset.tab === "her";
+        herContainer.style.display = isHer ? "grid" : "none";
+        usContainer.style.display = isHer ? "none" : "grid";
+      });
     });
   }
 
@@ -406,10 +470,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Lightbox functions
   let currentIndex = 0;
+  let currentSet = "her"; // "her" = foto solo, "us" = foto bersama
 
-  function openLightbox(index) {
+  function getActivePhotos() {
+    return currentSet === "her" ? herPhotos : memories;
+  }
+
+  function openLightbox(index, set) {
+    currentSet = set || "her";
     currentIndex = index;
-    const memory = memories[index];
+    const photos = getActivePhotos();
+    const memory = photos[index];
 
     const lightbox = document.querySelector(".lightbox-overlay");
     const img = lightbox.querySelector(".lightbox-img");
@@ -418,7 +489,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     img.src = memory.img;
     date.textContent = memory.date;
-    text.textContent = memory.caption;
+    text.textContent = memory.caption || "";
 
     lightbox.classList.add("active");
     document.body.style.overflow = "hidden"; // Prevent scrolling
@@ -431,13 +502,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function navigateLightbox(direction) {
+    const photos = getActivePhotos();
     if (direction === "prev") {
-      currentIndex = (currentIndex - 1 + memories.length) % memories.length;
+      currentIndex = (currentIndex - 1 + photos.length) % photos.length;
     } else {
-      currentIndex = (currentIndex + 1) % memories.length;
+      currentIndex = (currentIndex + 1) % photos.length;
     }
 
-    openLightbox(currentIndex);
+    openLightbox(currentIndex, currentSet);
   }
   // Video dan Password Protection
   const videoButton = document.getElementById("videoButton");
@@ -451,8 +523,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const birthdayVideo = document.getElementById("birthdayVideo");
 
   // Password yang digunakan untuk membuka video
-  // Password: Tanggal lahir Rafi+Rara(dd/dd/yy)
-  const correctPassword = "221305"; // Ubah ini sesuai tanggal lahir kalian
+  // Password: Tanggal lahir Rafli+Wafiq(dd/dd/04/2022) => 202204
+  const correctPassword = "202204"; // Ubah ini sesuai tanggal lahir kalian
 
   // Event listener untuk tombol video
   if (videoButton) {
@@ -543,7 +615,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Set Google Drive video URL dengan ID file Anda
     if (birthdayVideo) {
       // File ID dari link Google Drive Anda
-      const fileId = "1aoDfrLiYdzzSOwNj_u7EleR8R5didAXP";
+      const fileId = "14iBlPljArSqd-yCgVrMPm4d5VtChHBTA";
       birthdayVideo.src = `https://drive.google.com/file/d/${fileId}/preview`;
 
       // Tambahkan loading indicator

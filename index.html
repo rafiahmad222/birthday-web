@@ -18,9 +18,9 @@
 <body>
     <!-- Background slideshow -->
     <div class="slideshow-container">
-        <div class="slide active" style="background-image: url('images/photo1.jpg');"></div>
-        <div class="slide" style="background-image: url('images/photo2.jpg');"></div>
-        <div class="slide" style="background-image: url('images/photo3.jpg');"></div>
+        <div class="slide active" style="background-image: url('images/wafiq-bg1.jpg');"></div>
+        <div class="slide" style="background-image: url('images/wafiq-bg2.jpg');"></div>
+        <div class="slide" style="background-image: url('images/wafiq-bg3.jpg');"></div>
     </div>
 
     <!-- Content Overlay -->
@@ -32,7 +32,7 @@
                 <div class="card welcome-card">
                     <div class="card-content">
                         <p class="lead">Selamat bertambah Usia</p>
-                        <p class="greeting-text">Najwah 'Aridh</p>
+                        <p class="greeting-text">Wafiq Azizatul Fitriyah</p>
                     </div>
                 </div>
 
@@ -61,8 +61,25 @@
                 <!-- Memory Gallery Section - disembunyikan di awal -->
                 <div class="memory-gallery" id="memoryGallery">
                     <h2 class="gallery-title">Our Precious Moments</h2>
-                    <div class="gallery-container">
-                        <!-- Gallery items will be populated by JavaScript -->
+
+                    <!-- Tab: Foto Rara (solo) & Foto Kita (bersama) -->
+                    <div class="gallery-tabs">
+                        <button class="gallery-tab active" data-tab="her">
+                            <i class="fas fa-crown"></i> Foto Cintaku
+                        </button>
+                        <button class="gallery-tab" data-tab="us">
+                            <i class="fas fa-heart"></i> Foto Kita
+                        </button>
+                    </div>
+
+                    <!-- Section foto dia sendiri -->
+                    <div class="gallery-container solo-gallery" id="galleryHer">
+                        <!-- Foto solo Rara akan diisi oleh JavaScript -->
+                    </div>
+
+                    <!-- Section foto bersama -->
+                    <div class="gallery-container" id="galleryUs" style="display: none;">
+                        <!-- Foto bersama akan diisi oleh JavaScript -->
                     </div>
                 </div>
                 <!-- Video Message Button -->
@@ -83,7 +100,7 @@
                             <p>Untuk melihat video spesial dariku, masukkan kode rahasia kita:</p>
                             <div class="password-form">
                                 <input type="password" id="passwordInput" placeholder="Kode rahasia...">
-                                <div class="password-hint">Hint: Tanggal lahir Rafi+Rara(dd/dd/yy)</div>
+                                <div class="password-hint">Hint: Tanggal lahir Rafli+Wafiq(dd/dd/04)</div>
                                 <div class="password-error" id="passwordError"></div>
                             </div>
                         </div>
@@ -109,7 +126,7 @@
                         <div class="video-footer">
                             <p>I Love You, selamat ulang tahun ya sayang 💕</p>
                             <p class="video-fallback">Jika video tidak bisa diputar, <a
-                                    href="https://drive.google.com/file/d/1aoDfrLiYdzzSOwNj_u7EleR8R5didAXP/view"
+                                    href="https://drive.google.com/file/d/14iBlPljArSqd-yCgVrMPm4d5VtChHBTA/view?usp=drivesdk"
                                     target="_blank">klik disini</a> untuk menonton langsung.</p>
                         </div>
                     </div>
